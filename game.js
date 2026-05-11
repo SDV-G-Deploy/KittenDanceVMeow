@@ -172,62 +172,78 @@ function buildUiSprites() {
 }
 
 function kittenSprite(x, y, hype, hueShift = 0) {
-  const bob = Math.sin(state.time * 7 + hueShift) * (5 + 8 * hype);
-  const blink = Math.sin(state.time * 2.7 + hueShift) > 0.94 ? 0.18 : 1;
+  const bob = Math.sin(state.time * 5 + hueShift) * (3 + 5 * hype);
+  const blink = Math.sin(state.time * 2.2 + hueShift) > 0.96 ? 0.2 : 1;
 
   ctx.save();
   ctx.translate(x, y + bob);
-  ctx.scale(0.9 + hype * 0.07, 0.9 + hype * 0.05);
+  ctx.scale(0.84 + hype * 0.06, 0.9 + hype * 0.05);
 
-  // tail
-  ctx.strokeStyle = '#ffb4d9';
-  ctx.lineWidth = 10;
+  // slim tail with depth
+  const tailGrad = ctx.createLinearGradient(26, 14, 86, -32);
+  tailGrad.addColorStop(0, '#d89abf');
+  tailGrad.addColorStop(1, '#f8d6e8');
+  ctx.strokeStyle = tailGrad;
+  ctx.lineWidth = 8;
   ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(40, 24);
-  ctx.quadraticCurveTo(78, 12 + Math.sin(state.time * 8) * 4, 62, -16);
+  ctx.moveTo(36, 34);
+  ctx.quadraticCurveTo(88, 16 + Math.sin(state.time * 5) * 5, 74, -26);
   ctx.stroke();
 
-  // head
-  ctx.fillStyle = `hsl(${336 + hueShift}, 100%, 91%)`;
-  ctx.beginPath(); ctx.ellipse(0, 0, 62, 56, 0, 0, Math.PI * 2); ctx.fill();
+  // body (less "fat", more elegant oval)
+  const bodyGrad = ctx.createRadialGradient(-10, -20, 10, 0, 8, 78);
+  bodyGrad.addColorStop(0, '#fff6fb');
+  bodyGrad.addColorStop(0.45, '#ffd9ec');
+  bodyGrad.addColorStop(1, '#d9a7c8');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath(); ctx.ellipse(0, 8, 52, 62, 0, 0, Math.PI * 2); ctx.fill();
 
-  // ears
-  ctx.beginPath(); ctx.moveTo(-42, -28); ctx.lineTo(-26, -80); ctx.lineTo(-8, -30); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(42, -28); ctx.lineTo(26, -80); ctx.lineTo(8, -30); ctx.fill();
-  ctx.fillStyle = '#ff9ecf';
-  ctx.beginPath(); ctx.moveTo(-31, -38); ctx.lineTo(-25, -65); ctx.lineTo(-16, -35); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(31, -38); ctx.lineTo(25, -65); ctx.lineTo(16, -35); ctx.fill();
+  // ears with fur tint
+  ctx.fillStyle = '#f8d2e6';
+  ctx.beginPath(); ctx.moveTo(-32, -33); ctx.lineTo(-19, -78); ctx.lineTo(-4, -28); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(32, -33); ctx.lineTo(19, -78); ctx.lineTo(4, -28); ctx.fill();
+  ctx.fillStyle = '#ff9bcf';
+  ctx.beginPath(); ctx.moveTo(-23, -41); ctx.lineTo(-18, -66); ctx.lineTo(-11, -37); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(23, -41); ctx.lineTo(18, -66); ctx.lineTo(11, -37); ctx.fill();
 
-  // eyes (big kawaii)
-  ctx.fillStyle = '#2b1d59';
-  ctx.save(); ctx.translate(-18, -4); ctx.scale(1, blink); ctx.beginPath(); ctx.ellipse(0, 0, 11, 14, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-  ctx.save(); ctx.translate(18, -4); ctx.scale(1, blink); ctx.beginPath(); ctx.ellipse(0, 0, 11, 14, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  // eyes with iris and shine
+  ctx.fillStyle = '#1f1b32';
+  ctx.save(); ctx.translate(-14, -6); ctx.scale(1, blink); ctx.beginPath(); ctx.ellipse(0, 0, 8, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.translate(14, -6); ctx.scale(1, blink); ctx.beginPath(); ctx.ellipse(0, 0, 8, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  ctx.fillStyle = '#6de0ff';
+  ctx.beginPath(); ctx.ellipse(-14, -6, 3.3, 5.2, 0, 0, Math.PI * 2); ctx.ellipse(14, -6, 3.3, 5.2, 0, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.arc(-14, -10, 3.2, 0, Math.PI * 2); ctx.arc(22, -10, 3.2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(-12, -11, 2.4, 0, Math.PI * 2); ctx.arc(16, -11, 2.4, 0, Math.PI * 2); ctx.fill();
 
-  // nose + mouth
-  ctx.fillStyle = '#ff6fb5';
-  ctx.beginPath(); ctx.moveTo(0, 8); ctx.lineTo(-4, 13); ctx.lineTo(4, 13); ctx.fill();
-  ctx.strokeStyle = '#5a3564'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.arc(-5, 18, 7, 0.1, 2.7); ctx.stroke();
-  ctx.beginPath(); ctx.arc(5, 18, 7, 0.45, 3.05); ctx.stroke();
+  // muzzle + nose + mouth
+  ctx.fillStyle = '#ffe8f4';
+  ctx.beginPath(); ctx.ellipse(0, 16, 18, 11, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#f274b6';
+  ctx.beginPath(); ctx.moveTo(0, 11); ctx.lineTo(-4, 16); ctx.lineTo(4, 16); ctx.fill();
+  ctx.strokeStyle = '#5f3f67'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.arc(-4, 20, 6, 0.2, 2.8); ctx.stroke();
+  ctx.beginPath(); ctx.arc(4, 20, 6, 0.35, 2.95); ctx.stroke();
 
-  // blush
-  ctx.fillStyle = '#ff89bf88';
-  ctx.beginPath(); ctx.ellipse(-33, 12, 10, 6, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(33, 12, 10, 6, 0, 0, Math.PI * 2); ctx.fill();
+  // whiskers
+  ctx.strokeStyle = '#ffffffaa'; ctx.lineWidth = 1.4;
+  for (const side of [-1, 1]) {
+    const bx = side * 11;
+    ctx.beginPath(); ctx.moveTo(bx, 16); ctx.lineTo(bx + side * 19, 13); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx, 19); ctx.lineTo(bx + side * 20, 21); ctx.stroke();
+  }
 
-  // paws
-  const pawY = 52 + Math.sin(state.time * 16 + hueShift) * (4 + 12 * hype);
-  ctx.fillStyle = '#ffc0df';
-  ctx.beginPath(); ctx.ellipse(-36, pawY, 14, 10, 0, 0, 7); ctx.ellipse(36, pawY, 14, 10, 0, 0, 7); ctx.fill();
+  // soft blush + paws
+  ctx.fillStyle = '#ff8fbf66';
+  ctx.beginPath(); ctx.ellipse(-28, 14, 8, 5, 0, 0, Math.PI * 2); ctx.ellipse(28, 14, 8, 5, 0, 0, Math.PI * 2); ctx.fill();
+  const pawY = 58 + Math.sin(state.time * 12 + hueShift) * (2 + 8 * hype);
+  ctx.fillStyle = '#f8c5df';
+  ctx.beginPath(); ctx.ellipse(-27, pawY, 11, 8, 0, 0, Math.PI * 2); ctx.ellipse(27, pawY, 11, 8, 0, 0, Math.PI * 2); ctx.fill();
 
-  // bow
-  ctx.fillStyle = '#ff5fb1';
-  ctx.beginPath(); ctx.ellipse(-50, -24, 9, 7, 0.3, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(-38, -30, 9, 7, -0.3, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#ffd6ee'; ctx.beginPath(); ctx.arc(-44, -27, 3, 0, Math.PI * 2); ctx.fill();
+  // rim light for depth
+  ctx.strokeStyle = '#ffffff66';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(-8, -16, 34, 3.3, 4.9); ctx.stroke();
 
   ctx.restore();
 }
