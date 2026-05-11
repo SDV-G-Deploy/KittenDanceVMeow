@@ -92,7 +92,7 @@ state.notes = createChart();
 
 function kittenSprite(hype) {
   ctx.save();
-  ctx.translate(130, 330 + Math.sin(state.time * 9) * 6 * hype);
+  ctx.translate(130, 330 + Math.sin(state.time * 7) * (6 + 10 * hype));
   ctx.scale(1 + 0.06 * hype, 1 + 0.03 * hype);
   ctx.fillStyle = '#ffd9ec';
   ctx.beginPath(); ctx.ellipse(0, 0, 60, 55, 0, 0, Math.PI * 2); ctx.fill();
@@ -102,7 +102,7 @@ function kittenSprite(hype) {
   ctx.beginPath(); ctx.arc(-17, -5, 6, 0, 7); ctx.arc(17, -5, 6, 0, 7); ctx.fill();
   ctx.strokeStyle = '#40223f'; ctx.lineWidth = 4;
   ctx.beginPath(); ctx.arc(0, 16, 14, 0, Math.PI); ctx.stroke();
-  const pawY = 50 + Math.sin(state.time * 18) * 12 * hype;
+  const pawY = 50 + Math.sin(state.time * 16) * (4 + 12 * hype);
   ctx.fillStyle = '#ffb8d8';
   ctx.beginPath(); ctx.ellipse(-36, pawY, 14, 10, 0, 0, 7); ctx.ellipse(36, pawY, 14, 10, 0, 0, 7); ctx.fill();
   ctx.restore();
@@ -195,9 +195,9 @@ function draw() {
   ctx.font = '20px Trebuchet MS';
   for (const n of state.notes) {
     if (n.judged && n.hitTime < state.time - 0.2) continue;
-    const t = (n.hitTime - state.time + travelSec) / travelSec;
-    const y = spawnY + (hitY - spawnY) * (1 - t);
-    if (y < -30 || y > 520) continue;
+    const progress = 1 - ((n.hitTime - state.time) / travelSec);
+    const y = spawnY + (hitY - spawnY) * progress;
+    if (y < -60 || y > 560) continue;
     ctx.fillStyle = '#6ce2ff';
     drawRoundedRect(lanes[n.lane] - 42, y - 18, 84, 36, 9);
     ctx.fill();
@@ -228,7 +228,7 @@ function draw() {
 
   if (state.over) {
     ctx.fillStyle = '#000a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#fff'; ctx.font = '34px Trebuchet MS'; ctx.fillText('Show Over! Kittens need encore!', 265, 230);
+    ctx.fillStyle = '#fff'; ctx.font = '34px Trebuchet MS'; ctx.fillText('Show Over! Kittens need an encore!', 265, 230);
     ctx.font = '24px Trebuchet MS'; ctx.fillText('Press R to play again', 380, 270);
   }
 }
