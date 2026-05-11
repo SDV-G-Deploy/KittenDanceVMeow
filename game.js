@@ -51,6 +51,8 @@ const state = {
   stars: [],
   sprites: null,
   uiSprites: null,
+  extCatSprite: null,
+  extCatLoaded: false,
   songStartTime: 0,
   graceWindow: 0
 };
@@ -169,6 +171,36 @@ function buildUiSprites() {
   makeBadge('GO!', 98, '#07D98C', '#4227F2');
 
   state.uiSprites = { panel };
+}
+
+
+function loadExternalCatSprite() {
+  const img = new Image();
+  img.onload = () => {
+    state.extCatSprite = img;
+    state.extCatLoaded = true;
+  };
+  img.onerror = () => {
+    state.extCatLoaded = false;
+  };
+  img.src = 'assets/cat_sprite.png';
+}
+
+function drawExternalCat(x, y, hype, phase = 0) {
+  if (!state.extCatLoaded || !state.extCatSprite) return false;
+  const frames = 4;
+  const fw = Math.floor(state.extCatSprite.width / frames);
+  const fh = state.extCatSprite.height;
+  if (!fw || !fh) return false;
+  const frame = (Math.floor(state.time * (6 + hype * 4) + phase) % frames + frames) % frames;
+  const bob = Math.sin(state.time * 5 + phase) * (3 + 4 * hype);
+  const dw = 110;
+  const dh = Math.floor((fh / fw) * dw);
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(state.extCatSprite, frame * fw, 0, fw, fh, x - dw / 2, y - dh / 2 + bob, dw, dh);
+  ctx.restore();
+  return true;
 }
 
 function kittenSprite(x, y, hype, hueShift = 0) {
@@ -355,8 +387,8 @@ function draw() {
     ctx.shadowBlur = 0;
   }
 
-  kittenSprite(120, 340, state.kittensMood, 0);
-  kittenSprite(840, 340, state.kittensMood * 0.8, 22);
+  if (!drawExternalCat(120, 350, state.kittensMood, 0)) kittenSprite(120, 340, state.kittensMood, 0);
+  if (!drawExternalCat(840, 350, state.kittensMood * 0.8, 2)) kittenSprite(840, 340, state.kittensMood * 0.8, 22);
   const ks = state.sprites.kitten;
   ctx.globalAlpha = 0.85;
   ctx.drawImage(state.sprites.sheet, ks.x, ks.y, ks.w, ks.h, 430, 72, 52, 50);
@@ -415,6 +447,7 @@ state.notes = createChart();
 buildStars();
 buildSprites();
 buildUiSprites();
+loadExternalCatSprite();
 let last = performance.now();
 (function loop(now) {
   const dt = Math.min(0.033, (now - last) / 1000);
