@@ -1,14 +1,12 @@
-# External Sprite Asset Notes (CC0)
+# External Sprite Asset Notes (Cute Rhythm Style)
 
-To enable higher-fidelity kitten visuals, place a licensed sprite sheet at:
+Default behavior now uses a built-in cute pixel kitten sprite sheet generated in code.
 
-- `assets/cat_sprite.png`
+Optional override:
+- Place your preferred licensed sprite sheet at `assets/cat_sprite.png`
+- Expected layout: 4 columns x 1 row (cute idle/dance loop)
 
-Expected layout (default):
-- 4 columns x 1 row walk/idle strip.
-
-The game will automatically prefer this external sprite if present, and will fallback to procedural kittens if not found.
-
-Suggested CC0 source options:
-- OpenGameArt: https://opengameart.org/content/2d-cat-sprite (CC0)
-- OpenGameArt: https://opengameart.org/content/tiny-kitten-game-sprite (CC0)
+Style guide for replacements:
+- Front or 3/4 view cats (not side-scroller silhouette)
+- Soft pastel tones, visible face, expressive eyes
+- Works well at small sizes on dark backgrounds

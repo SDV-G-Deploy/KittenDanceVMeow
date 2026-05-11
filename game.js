@@ -53,6 +53,7 @@ const state = {
   uiSprites: null,
   extCatSprite: null,
   extCatLoaded: false,
+  extCatFrames: 6,
   songStartTime: 0,
   graceWindow: 0
 };
@@ -174,11 +175,62 @@ function buildUiSprites() {
 }
 
 
+
+function buildDefaultCuteCatSprite() {
+  const frameW = 48;
+  const frameH = 48;
+  const frames = 6;
+  const c = document.createElement('canvas');
+  c.width = frameW * frames;
+  c.height = frameH;
+  const g = c.getContext('2d');
+  g.imageSmoothingEnabled = false;
+
+  const drawFrame = (i, pose = 0) => {
+    const ox = i * frameW;
+    const bob = pose % 2 === 0 ? 0 : 1;
+    g.fillStyle = '#111';
+    // outline head/body
+    g.fillRect(ox + 14, 14 + bob, 20, 18);
+    g.fillRect(ox + 16, 30 + bob, 16, 11);
+    g.fillRect(ox + 10, 13 + bob, 6, 7);
+    g.fillRect(ox + 32, 13 + bob, 6, 7);
+    // fur
+    g.fillStyle = '#ffe6f3';
+    g.fillRect(ox + 15, 15 + bob, 18, 16);
+    g.fillRect(ox + 17, 31 + bob, 14, 9);
+    g.fillStyle = '#ffc4df';
+    g.fillRect(ox + 11, 14 + bob, 4, 4);
+    g.fillRect(ox + 33, 14 + bob, 4, 4);
+    // eyes
+    g.fillStyle = '#2d1b48';
+    if (pose === 3) { g.fillRect(ox + 19, 23 + bob, 3, 1); g.fillRect(ox + 26, 23 + bob, 3, 1); }
+    else { g.fillRect(ox + 19, 22 + bob, 3, 4); g.fillRect(ox + 26, 22 + bob, 3, 4); }
+    g.fillStyle = '#fff'; g.fillRect(ox + 20, 22 + bob, 1, 1); g.fillRect(ox + 27, 22 + bob, 1, 1);
+    // nose + blush
+    g.fillStyle = '#ff76b8'; g.fillRect(ox + 23, 26 + bob, 2, 2);
+    g.fillStyle = '#ff9dcb'; g.fillRect(ox + 16, 27 + bob, 2, 1); g.fillRect(ox + 30, 27 + bob, 2, 1);
+    // paws / tail variations
+    g.fillStyle = '#ffd2e9';
+    g.fillRect(ox + 17, 39 + bob, 4, 2); g.fillRect(ox + 27, 39 + bob, 4, 2);
+    g.fillStyle = '#111';
+    if (pose < 2) g.fillRect(ox + 32, 33 + bob, 6, 2);
+    else if (pose < 4) { g.fillRect(ox + 32, 28 + bob, 2, 8); g.fillRect(ox + 32, 28 + bob, 6, 2); }
+    else { g.fillRect(ox + 11, 33 + bob, 2, 7); g.fillRect(ox + 11, 33 + bob, 6, 2); }
+  };
+
+  for (let i = 0; i < frames; i++) drawFrame(i, i);
+  state.extCatSprite = c;
+  state.extCatLoaded = true;
+  state.extCatFrames = frames;
+}
+
 function loadExternalCatSprite() {
   const img = new Image();
   img.onload = () => {
     state.extCatSprite = img;
     state.extCatLoaded = true;
+    state.extCatFrames = 4;
   };
   img.onerror = () => {
     state.extCatLoaded = false;
@@ -188,7 +240,7 @@ function loadExternalCatSprite() {
 
 function drawExternalCat(x, y, hype, phase = 0) {
   if (!state.extCatLoaded || !state.extCatSprite) return false;
-  const frames = 4;
+  const frames = state.extCatFrames || 4;
   const fw = Math.floor(state.extCatSprite.width / frames);
   const fh = state.extCatSprite.height;
   if (!fw || !fh) return false;
@@ -447,6 +499,7 @@ state.notes = createChart();
 buildStars();
 buildSprites();
 buildUiSprites();
+buildDefaultCuteCatSprite();
 loadExternalCatSprite();
 let last = performance.now();
 (function loop(now) {
