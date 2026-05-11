@@ -26,6 +26,7 @@ const state = {
   notes: [],
   particles: [],
   beatPulse: 0,
+  reduceMotion: false,
   kittensMood: 0,
   best: Number(localStorage.getItem(bestKey) || 0),
   streak: JSON.parse(localStorage.getItem(streakKey) || '{"last":"","days":0}'),
@@ -134,6 +135,7 @@ function judgeLane(laneIdx) {
 window.addEventListener('keydown', (e) => {
   if (!state.started && e.code === 'Space') { state.started = true; state.running = true; return; }
   if (e.code === 'KeyP' && state.started) state.running = !state.running;
+  if (e.code === 'KeyM') state.reduceMotion = !state.reduceMotion;
   if (e.code === 'KeyR' && state.over) window.location.reload();
   const idx = keys.indexOf(e.code);
   if (idx >= 0 && state.running && !state.over) judgeLane(idx);
@@ -143,7 +145,7 @@ function update(dt) {
   state.time += dt;
   if (!state.running || state.over) return;
 
-  state.beatPulse = Math.max(0, state.beatPulse - dt * 2.2);
+  state.beatPulse = Math.max(0, state.beatPulse - dt * 3.0);
   if ((state.time / beatSec | 0) !== ((state.time - dt) / beatSec | 0)) state.beatPulse = 1;
   state.feedbackTime = Math.max(0, state.feedbackTime - dt);
 
@@ -181,7 +183,7 @@ function drawBackground() {
 
 function draw() {
   drawBackground();
-  const pulse = 1 + state.beatPulse * 0.1;
+  const pulse = 1 + state.beatPulse * (state.reduceMotion ? 0.015 : 0.04);
   ctx.save();
   ctx.scale(pulse, pulse);
   ctx.translate((1 - pulse) * canvas.width / 2 / pulse, (1 - pulse) * canvas.height / 2 / pulse);
@@ -207,6 +209,7 @@ function draw() {
 
   for (const p of state.particles) {
     ctx.globalAlpha = Math.max(0, p.life * 2);
+    if (state.reduceMotion && Math.random() < 0.45) continue;
     ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 5, 5);
   }
   ctx.globalAlpha = 1;
@@ -224,12 +227,14 @@ function draw() {
   ctx.fillText(`Best today (${today}): ${state.best}`, 20, 110);
   ctx.fillText(`Streak days: ${state.streak.days}`, 20, 136);
   ctx.fillText(`Health: ${'❤'.repeat(Math.max(0, state.health))}`, 20, 162);
+  if (state.reduceMotion) ctx.fillText('Reduce Motion: ON', 20, 188);
 
   if (!state.started) {
     ctx.fillStyle = '#000a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#fff'; ctx.font = 'bold 42px Trebuchet MS'; ctx.fillText('Kitten Dance Beat Dash', 280, 210);
     ctx.font = '24px Trebuchet MS'; ctx.fillText('Press SPACE to start the party!', 330, 250);
     ctx.fillText('A / S / D to hit notes', 360, 285);
+    ctx.fillText('Press M any time for gentle motion mode', 285, 320);
   } else if (!state.running && !state.over) {
     ctx.fillStyle = '#0009'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#fff'; ctx.font = '42px Trebuchet MS'; ctx.fillText('Paused', 420, 250);
