@@ -10,6 +10,21 @@ const travelSec = 1.55;
 const hitY = 450;
 const spawnY = -40;
 
+const design = {
+  palette: {
+    bgTop: '#120B2E',
+    bgBottom: '#1D103D',
+    lanePanel: '#2B1D59',
+    laneLine: '#A796FF',
+    hitLine: '#F27EB4',
+    text: '#F8F4FF',
+    noteA: '#07D98C',
+    noteS: '#4227F2',
+    noteD: '#F27EB4',
+    noteInk: '#1A1233'
+  }
+};
+
 const today = new Date().toISOString().slice(0, 10);
 const streakKey = 'kitten_beat_streak';
 const bestKey = `kitten_beat_best_${today}`;
@@ -33,7 +48,8 @@ const state = {
   runRecorded: false,
   feedback: '',
   feedbackTime: 0,
-  stars: []
+  stars: [],
+  sprites: null
 };
 
 function rng(seed) {
@@ -81,6 +97,47 @@ function drawRoundedRect(x, y, w, h, r) {
   ctx.lineTo(x + w, y + h - rr); ctx.arcTo(x + w, y + h, x + w - rr, y + h, rr);
   ctx.lineTo(x + rr, y + h); ctx.arcTo(x, y + h, x, y + h - rr, rr);
   ctx.lineTo(x, y + rr); ctx.arcTo(x, y, x + rr, y, rr);
+}
+
+
+function buildSprites() {
+  const sheet = document.createElement('canvas');
+  sheet.width = 256; sheet.height = 128;
+  const sctx = sheet.getContext('2d');
+
+  const colors = [design.palette.noteA, design.palette.noteS, design.palette.noteD];
+  colors.forEach((c, i) => {
+    const x = 12 + i * 82;
+    sctx.fillStyle = c;
+    sctx.strokeStyle = '#ffffff55';
+    sctx.lineWidth = 2;
+    sctx.beginPath();
+    sctx.roundRect(x, 14, 72, 38, 10);
+    sctx.fill();
+    sctx.stroke();
+    sctx.fillStyle = design.palette.noteInk;
+    sctx.font = 'bold 18px Trebuchet MS';
+    sctx.fillText(laneLabels[i], x + 30, 39);
+  });
+
+  // kitten sticker sprite
+  sctx.fillStyle = '#ffd9ec';
+  sctx.beginPath(); sctx.ellipse(62, 94, 38, 34, 0, 0, Math.PI * 2); sctx.fill();
+  sctx.beginPath(); sctx.moveTo(36, 73); sctx.lineTo(44, 46); sctx.lineTo(54, 72); sctx.fill();
+  sctx.beginPath(); sctx.moveTo(88, 73); sctx.lineTo(80, 46); sctx.lineTo(70, 72); sctx.fill();
+  sctx.fillStyle = '#40223f';
+  sctx.beginPath(); sctx.arc(50, 92, 4, 0, 7); sctx.arc(74, 92, 4, 0, 7); sctx.fill();
+  sctx.lineWidth = 3; sctx.beginPath(); sctx.arc(62, 104, 9, 0, Math.PI); sctx.stroke();
+
+  state.sprites = {
+    sheet,
+    noteRects: [
+      { x: 12, y: 14, w: 72, h: 38 },
+      { x: 94, y: 14, w: 72, h: 38 },
+      { x: 176, y: 14, w: 72, h: 38 }
+    ],
+    kitten: { x: 24, y: 58, w: 76, h: 72 }
+  };
 }
 
 function kittenSprite(x, y, hype, hueShift = 0) {
@@ -172,7 +229,7 @@ function update(dt) {
 
 function drawBackground() {
   const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  grad.addColorStop(0, '#160d30'); grad.addColorStop(1, '#0d0a1e');
+  grad.addColorStop(0, design.palette.bgTop); grad.addColorStop(1, design.palette.bgBottom);
   ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
   for (const s of state.stars) {
     const a = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(state.time * 1.2 + s.tw));
@@ -188,10 +245,10 @@ function draw() {
   ctx.scale(pulse, pulse);
   ctx.translate((1 - pulse) * canvas.width / 2 / pulse, (1 - pulse) * canvas.height / 2 / pulse);
 
-  ctx.fillStyle = '#261b49'; ctx.fillRect(200, 40, 620, 460);
-  ctx.strokeStyle = '#8f78ff'; ctx.lineWidth = 2;
+  ctx.fillStyle = design.palette.lanePanel; ctx.fillRect(200, 40, 620, 460);
+  ctx.strokeStyle = design.palette.laneLine; ctx.lineWidth = 2;
   lanes.forEach((x) => { ctx.beginPath(); ctx.moveTo(x, 50); ctx.lineTo(x, 500); ctx.stroke(); });
-  ctx.fillStyle = '#ff8ad6'; ctx.fillRect(200, hitY, 620, 6);
+  ctx.fillStyle = design.palette.hitLine; ctx.fillRect(200, hitY, 620, 6);
 
   ctx.font = '20px Trebuchet MS';
   for (const n of state.notes) {
@@ -199,13 +256,17 @@ function draw() {
     const progress = 1 - ((n.hitTime - state.time) / travelSec);
     const y = spawnY + (hitY - spawnY) * progress;
     if (y < -60 || y > 560) continue;
-    ctx.fillStyle = ['#6ce2ff', '#ffbf6c', '#b5ff7c'][n.lane];
-    drawRoundedRect(lanes[n.lane] - 42, y - 18, 84, 36, 9); ctx.fill();
-    ctx.fillStyle = '#10263f'; ctx.fillText(laneLabels[n.lane], lanes[n.lane] - 4, y + 5);
+    const r = state.sprites.noteRects[n.lane];
+    ctx.drawImage(state.sprites.sheet, r.x, r.y, r.w, r.h, lanes[n.lane] - 42, y - 18, 84, 36);
   }
 
   kittenSprite(120, 340, state.kittensMood, 0);
   kittenSprite(840, 340, state.kittensMood * 0.8, 22);
+  const ks = state.sprites.kitten;
+  ctx.globalAlpha = 0.85;
+  ctx.drawImage(state.sprites.sheet, ks.x, ks.y, ks.w, ks.h, 430, 72, 52, 50);
+  ctx.drawImage(state.sprites.sheet, ks.x, ks.y, ks.w, ks.h, 500, 72, 52, 50);
+  ctx.globalAlpha = 1;
 
   for (const p of state.particles) {
     ctx.globalAlpha = Math.max(0, p.life * 2);
@@ -220,7 +281,7 @@ function draw() {
   }
 
   ctx.restore();
-  ctx.fillStyle = '#fff'; ctx.font = '20px Trebuchet MS';
+  ctx.fillStyle = design.palette.text; ctx.font = '20px Trebuchet MS';
   ctx.fillText(`Score: ${state.score}`, 20, 32);
   ctx.fillText(`Combo: ${state.combo}`, 20, 58);
   ctx.fillText(`Max Combo: ${state.maxCombo}`, 20, 84);
@@ -247,6 +308,7 @@ function draw() {
 
 state.notes = createChart();
 buildStars();
+buildSprites();
 let last = performance.now();
 (function loop(now) {
   const dt = Math.min(0.033, (now - last) / 1000);
