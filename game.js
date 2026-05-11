@@ -4,7 +4,7 @@ const ctx = canvas.getContext('2d');
 const lanes = [230, 480, 730];
 const keys = ['KeyA', 'KeyS', 'KeyD'];
 const laneLabels = ['A', 'S', 'D'];
-const bpm = 128;
+const bpm = 108;
 const beatSec = 60 / bpm;
 const travelSec = 1.55;
 const hitY = 450;
@@ -49,7 +49,9 @@ const state = {
   feedback: '',
   feedbackTime: 0,
   stars: [],
-  sprites: null
+  sprites: null,
+  songStartTime: 0,
+  graceWindow: 0
 };
 
 function rng(seed) {
@@ -68,12 +70,13 @@ function buildStars() {
 function createChart() {
   const chart = [];
   let t = 2;
-  for (let i = 0; i < 180; i++) {
+  for (let i = 0; i < 140; i++) {
     const lane = Math.floor(random() * 3);
     chart.push({ lane, hitTime: t, judged: false });
-    if (random() < 0.2) chart.push({ lane: (lane + 1 + Math.floor(random() * 2)) % 3, hitTime: t + beatSec * 0.5, judged: false });
-    const ramp = Math.max(0.38, 1 - i * 0.0022); // dynamic intensity
-    t += beatSec * (random() < 0.32 ? 0.5 : 1) * ramp;
+    if (i > 18 && random() < 0.13) chart.push({ lane: (lane + 1 + Math.floor(random() * 2)) % 3, hitTime: t + beatSec * 0.5, judged: false });
+    const section = i < 32 ? 1.28 : (i < 90 ? 1.04 : 0.9);
+    const burst = (i > 100 && random() < 0.18) ? 0.75 : 1;
+    t += beatSec * (random() < 0.22 ? 0.5 : 1) * section * burst;
   }
   return chart.sort((a, b) => a.hitTime - b.hitTime);
 }
@@ -190,7 +193,7 @@ function judgeLane(laneIdx) {
 }
 
 window.addEventListener('keydown', (e) => {
-  if (!state.started && e.code === 'Space') { state.started = true; state.running = true; return; }
+  if (!state.started && e.code === 'Space') { state.started = true; state.running = true; state.songStartTime = state.time + 3; state.graceWindow = 3; return; }
   if (e.code === 'KeyP' && state.started) state.running = !state.running;
   if (e.code === 'KeyM') state.reduceMotion = !state.reduceMotion;
   if (e.code === 'KeyR' && state.over) window.location.reload();
@@ -203,11 +206,12 @@ function update(dt) {
   if (!state.running || state.over) return;
 
   state.beatPulse = Math.max(0, state.beatPulse - dt * 3.0);
+  state.graceWindow = Math.max(0, state.songStartTime - state.time);
   if ((state.time / beatSec | 0) !== ((state.time - dt) / beatSec | 0)) state.beatPulse = 1;
   state.feedbackTime = Math.max(0, state.feedbackTime - dt);
 
   for (const n of state.notes) {
-    if (!n.judged && state.time - n.hitTime > 0.18) {
+    if (state.time >= state.songStartTime && !n.judged && state.time - n.hitTime > 0.18) {
       n.judged = true;
       state.combo = 0;
       state.health -= 1;
@@ -296,6 +300,13 @@ function draw() {
     ctx.font = '24px Trebuchet MS'; ctx.fillText('Press SPACE to start the party!', 330, 250);
     ctx.fillText('A / S / D to hit notes', 360, 285);
     ctx.fillText('Press M any time for gentle motion mode', 285, 320);
+
+  if (state.started && !state.over && state.graceWindow > 0) {
+    ctx.fillStyle = '#0008'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 56px Trebuchet MS';
+    ctx.fillText(String(Math.ceil(state.graceWindow)), 468, 250);
+    ctx.font = '24px Trebuchet MS'; ctx.fillText('Get ready... no HP loss yet', 355, 290);
+  }
   } else if (!state.running && !state.over) {
     ctx.fillStyle = '#0009'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#fff'; ctx.font = '42px Trebuchet MS'; ctx.fillText('Paused', 420, 250);
