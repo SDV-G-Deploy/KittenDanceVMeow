@@ -125,10 +125,14 @@ function buildSprites() {
   });
 
   // kitten sticker sprite
+  sctx.strokeStyle = '#ffffffcc';
+  sctx.lineWidth = 4;
   sctx.fillStyle = '#ffd9ec';
-  sctx.beginPath(); sctx.ellipse(62, 94, 38, 34, 0, 0, Math.PI * 2); sctx.fill();
+  sctx.beginPath(); sctx.ellipse(62, 94, 38, 34, 0, 0, Math.PI * 2); sctx.fill(); sctx.stroke();
   sctx.beginPath(); sctx.moveTo(36, 73); sctx.lineTo(44, 46); sctx.lineTo(54, 72); sctx.fill();
   sctx.beginPath(); sctx.moveTo(88, 73); sctx.lineTo(80, 46); sctx.lineTo(70, 72); sctx.fill();
+  sctx.fillStyle = '#40223f';
+  sctx.fillStyle = '#ff8fc6'; sctx.beginPath(); sctx.ellipse(43, 101, 7, 4, 0, 0, 6.3); sctx.ellipse(81, 101, 7, 4, 0, 0, 6.3); sctx.fill();
   sctx.fillStyle = '#40223f';
   sctx.beginPath(); sctx.arc(50, 92, 4, 0, 7); sctx.arc(74, 92, 4, 0, 7); sctx.fill();
   sctx.lineWidth = 3; sctx.beginPath(); sctx.arc(62, 104, 9, 0, Math.PI); sctx.stroke();
@@ -168,19 +172,63 @@ function buildUiSprites() {
 }
 
 function kittenSprite(x, y, hype, hueShift = 0) {
+  const bob = Math.sin(state.time * 7 + hueShift) * (5 + 8 * hype);
+  const blink = Math.sin(state.time * 2.7 + hueShift) > 0.94 ? 0.18 : 1;
+
   ctx.save();
-  ctx.translate(x, y + Math.sin(state.time * 7 + hueShift) * (5 + 8 * hype));
-  ctx.scale(0.82 + hype * 0.06, 0.82 + hype * 0.04);
-  ctx.fillStyle = `hsl(${330 + hueShift}, 100%, 90%)`;
-  ctx.beginPath(); ctx.ellipse(0, 0, 60, 55, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(-42, -32); ctx.lineTo(-26, -76); ctx.lineTo(-8, -30); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(42, -32); ctx.lineTo(26, -76); ctx.lineTo(8, -30); ctx.fill();
-  ctx.fillStyle = '#40223f';
-  ctx.beginPath(); ctx.arc(-17, -5, 6, 0, 7); ctx.arc(17, -5, 6, 0, 7); ctx.fill();
-  ctx.strokeStyle = '#40223f'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0, 16, 14, 0, Math.PI); ctx.stroke();
+  ctx.translate(x, y + bob);
+  ctx.scale(0.9 + hype * 0.07, 0.9 + hype * 0.05);
+
+  // tail
+  ctx.strokeStyle = '#ffb4d9';
+  ctx.lineWidth = 10;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(40, 24);
+  ctx.quadraticCurveTo(78, 12 + Math.sin(state.time * 8) * 4, 62, -16);
+  ctx.stroke();
+
+  // head
+  ctx.fillStyle = `hsl(${336 + hueShift}, 100%, 91%)`;
+  ctx.beginPath(); ctx.ellipse(0, 0, 62, 56, 0, 0, Math.PI * 2); ctx.fill();
+
+  // ears
+  ctx.beginPath(); ctx.moveTo(-42, -28); ctx.lineTo(-26, -80); ctx.lineTo(-8, -30); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(42, -28); ctx.lineTo(26, -80); ctx.lineTo(8, -30); ctx.fill();
+  ctx.fillStyle = '#ff9ecf';
+  ctx.beginPath(); ctx.moveTo(-31, -38); ctx.lineTo(-25, -65); ctx.lineTo(-16, -35); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(31, -38); ctx.lineTo(25, -65); ctx.lineTo(16, -35); ctx.fill();
+
+  // eyes (big kawaii)
+  ctx.fillStyle = '#2b1d59';
+  ctx.save(); ctx.translate(-18, -4); ctx.scale(1, blink); ctx.beginPath(); ctx.ellipse(0, 0, 11, 14, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.translate(18, -4); ctx.scale(1, blink); ctx.beginPath(); ctx.ellipse(0, 0, 11, 14, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(-14, -10, 3.2, 0, Math.PI * 2); ctx.arc(22, -10, 3.2, 0, Math.PI * 2); ctx.fill();
+
+  // nose + mouth
+  ctx.fillStyle = '#ff6fb5';
+  ctx.beginPath(); ctx.moveTo(0, 8); ctx.lineTo(-4, 13); ctx.lineTo(4, 13); ctx.fill();
+  ctx.strokeStyle = '#5a3564'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(-5, 18, 7, 0.1, 2.7); ctx.stroke();
+  ctx.beginPath(); ctx.arc(5, 18, 7, 0.45, 3.05); ctx.stroke();
+
+  // blush
+  ctx.fillStyle = '#ff89bf88';
+  ctx.beginPath(); ctx.ellipse(-33, 12, 10, 6, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(33, 12, 10, 6, 0, 0, Math.PI * 2); ctx.fill();
+
+  // paws
   const pawY = 52 + Math.sin(state.time * 16 + hueShift) * (4 + 12 * hype);
-  ctx.fillStyle = '#ffb8d8';
+  ctx.fillStyle = '#ffc0df';
   ctx.beginPath(); ctx.ellipse(-36, pawY, 14, 10, 0, 0, 7); ctx.ellipse(36, pawY, 14, 10, 0, 0, 7); ctx.fill();
+
+  // bow
+  ctx.fillStyle = '#ff5fb1';
+  ctx.beginPath(); ctx.ellipse(-50, -24, 9, 7, 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-38, -30, 9, 7, -0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffd6ee'; ctx.beginPath(); ctx.arc(-44, -27, 3, 0, Math.PI * 2); ctx.fill();
+
   ctx.restore();
 }
 
