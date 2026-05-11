@@ -50,6 +50,7 @@ const state = {
   feedbackTime: 0,
   stars: [],
   sprites: null,
+  uiSprites: null,
   songStartTime: 0,
   graceWindow: 0
 };
@@ -141,6 +142,29 @@ function buildSprites() {
     ],
     kitten: { x: 24, y: 58, w: 76, h: 72 }
   };
+}
+
+
+function buildUiSprites() {
+  const panel = document.createElement('canvas');
+  panel.width = 420; panel.height = 180;
+  const pctx = panel.getContext('2d');
+
+  const makeBadge = (text, y, c1, c2) => {
+    const g = pctx.createLinearGradient(40, y, 380, y + 58);
+    g.addColorStop(0, c1); g.addColorStop(1, c2);
+    pctx.fillStyle = g;
+    pctx.beginPath(); pctx.roundRect(40, y, 340, 58, 18); pctx.fill();
+    pctx.strokeStyle = '#ffffff88'; pctx.lineWidth = 3;
+    pctx.stroke();
+    pctx.fillStyle = '#fff'; pctx.font = 'bold 38px Trebuchet MS';
+    pctx.fillText(text, 145, y + 40);
+  };
+
+  makeBadge('READY', 24, '#4227F2', '#F27EB4');
+  makeBadge('GO!', 98, '#07D98C', '#4227F2');
+
+  state.uiSprites = { panel };
 }
 
 function kittenSprite(x, y, hype, hueShift = 0) {
@@ -261,7 +285,10 @@ function draw() {
     const y = spawnY + (hitY - spawnY) * progress;
     if (y < -60 || y > 560) continue;
     const r = state.sprites.noteRects[n.lane];
+    ctx.shadowColor = ['#07D98C', '#6670ff', '#ff7dbd'][n.lane];
+    ctx.shadowBlur = 12;
     ctx.drawImage(state.sprites.sheet, r.x, r.y, r.w, r.h, lanes[n.lane] - 42, y - 18, 84, 36);
+    ctx.shadowBlur = 0;
   }
 
   kittenSprite(120, 340, state.kittensMood, 0);
@@ -300,13 +327,16 @@ function draw() {
     ctx.font = '24px Trebuchet MS'; ctx.fillText('Press SPACE to start the party!', 330, 250);
     ctx.fillText('A / S / D to hit notes', 360, 285);
     ctx.fillText('Press M any time for gentle motion mode', 285, 320);
+  }
 
   if (state.started && !state.over && state.graceWindow > 0) {
     ctx.fillStyle = '#0008'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const t = Math.ceil(state.graceWindow);
+    const sy = t > 1 ? 0 : 74;
+    ctx.drawImage(state.uiSprites.panel, 0, sy, 420, 74, 270, 170, 420, 74);
     ctx.fillStyle = '#fff'; ctx.font = 'bold 56px Trebuchet MS';
-    ctx.fillText(String(Math.ceil(state.graceWindow)), 468, 250);
-    ctx.font = '24px Trebuchet MS'; ctx.fillText('Get ready... no HP loss yet', 355, 290);
-  }
+    ctx.fillText(String(t), 468, 278);
+    ctx.font = '22px Trebuchet MS'; ctx.fillText('No HP loss during countdown', 350, 318);
   } else if (!state.running && !state.over) {
     ctx.fillStyle = '#0009'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#fff'; ctx.font = '42px Trebuchet MS'; ctx.fillText('Paused', 420, 250);
@@ -320,6 +350,7 @@ function draw() {
 state.notes = createChart();
 buildStars();
 buildSprites();
+buildUiSprites();
 let last = performance.now();
 (function loop(now) {
   const dt = Math.min(0.033, (now - last) / 1000);
